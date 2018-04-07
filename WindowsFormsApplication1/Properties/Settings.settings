@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CustomFiscalParser.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="CodePage" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">866</Value>
+    </Setting>
+    <Setting Name="CSVdelimiter" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">;</Value>
+    </Setting>
+    <Setting Name="CommandsDatabaseFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">q3f_commands.csv</Value>
+    </Setting>
+    <Setting Name="ErrorsDatabaseFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">q3f_errors.csv</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
