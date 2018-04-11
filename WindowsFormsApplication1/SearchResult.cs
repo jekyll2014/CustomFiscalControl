@@ -85,11 +85,6 @@ public class ParseEscPos
         public static string Bitfield { get; set; } = "bitfield";
     }
 
-    /*internal static void Init(string _data, DataTable _dataBase)  //Setup source table of commands and source text field
-    {
-        sourceData = _data;
-        commandDataBase = _dataBase;
-    }*/
 
     //lineNum = -1 - искать во всех командах
     //lineNum = x - искать в команде на определенной стоке базы
@@ -133,15 +128,17 @@ public class ParseEscPos
         else return false;
 
         //check if "commandFrameLength" less than "sourcedata". note the last byte of "sourcedata" is CRC.
-        if (sourceData.Count - 1 < _pos + commandFrameLength)
+        if (sourceData.Count < _pos + commandFrameLength+1)
         {
             commandFrameLength = sourceData.Count - _pos;
             lengthIncorrect = true;
         }
 
         //find command
+        int i = 0;
+        if (lineNum != -1) i = lineNum;
         if (sourceData.Count < _pos + 1) return false; //check if it doesn't go over the last symbol
-        for (int i = 0; i < commandDataBase.Rows.Count; i++)
+        for (i=i; i < commandDataBase.Rows.Count; i++)
         {
             if (commandDataBase.Rows[i][CSVColumns.CommandName].ToString() != "")
             {

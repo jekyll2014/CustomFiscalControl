@@ -186,8 +186,7 @@ namespace WindowsFormsApplication1
                     i += 3;
                 }
                 ParseEscPos.commandName = "";
-                row[ResultColumns.Value] = "";
-                row[ResultColumns.Value] += "\"" + (String)listBox_code.SelectedItem.ToString() + "\"";
+                row[ResultColumns.Value] = "\"" + (String)listBox_code.SelectedItem.ToString() + "\"";
                 dataGridView_commands.CurrentCell = dataGridView_commands.Rows[0].Cells[0];
                 //dataGridView_commands.FirstDisplayedCell = dataGridView_commands.CurrentCell;
                 //dataGridView_commands.Refresh();
