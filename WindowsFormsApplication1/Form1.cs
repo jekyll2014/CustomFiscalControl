@@ -131,12 +131,13 @@ namespace WindowsFormsApplication1
             inputFile.Close();
         }
 
-        private void button_find_Click(object sender, EventArgs e)
+        private void Button_find_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
             ResultDatabase.Clear();
             textBox_search.Clear();
-            ParseEscPos.sourceData = listBox_code.SelectedItem.ToString();
+            ParseEscPos.sourceData.Clear();
+            ParseEscPos.sourceData.AddRange( Accessory.ConvertHexToByteArray( listBox_code.SelectedItem.ToString()));
             int lineNum = -1;
             if (sender == findThisToolStripMenuItem && dataGridView_commands.CurrentCell != null) lineNum = dataGridView_commands.CurrentCell.RowIndex;
             if (ParseEscPos.FindCommand(0, lineNum))
@@ -158,11 +159,11 @@ namespace WindowsFormsApplication1
                     row[ResultColumns.Value] = ParseEscPos.commandParamValue[i];
                     row[ResultColumns.Type] = ParseEscPos.commandParamType[i];
                     row[ResultColumns.Length] = ParseEscPos.commandParamSizeDefined[i];
-                    row[ResultColumns.Raw] = ParseEscPos.commandParamRAWValue[i];
+                    row[ResultColumns.Raw] = Accessory.ConvertByteArrayToHex( ParseEscPos.commandParamRAWValue[i].ToArray());
                     row[ResultColumns.Description] = ParseEscPos.commandParamDesc[i];
-                    if (ParseEscPos.commandParamType[i].ToLower() == ParseEscPos.dataTypes.Error) row[ResultColumns.Description] += ": " + GetErrorDesc(int.Parse(ParseEscPos.commandParamValue[i]));
+                    if (ParseEscPos.commandParamType[i].ToLower() == ParseEscPos.DataTypes.Error) row[ResultColumns.Description] += ": " + GetErrorDesc(int.Parse(ParseEscPos.commandParamValue[i]));
                     ResultDatabase.Rows.Add(row);
-                    if (ParseEscPos.commandParamType[i].ToLower() == ParseEscPos.dataTypes.Bitfield)  //add bitfield display
+                    if (ParseEscPos.commandParamType[i].ToLower() == ParseEscPos.DataTypes.Bitfield)  //add bitfield display
                     {
                         byte b = byte.Parse(ParseEscPos.commandParamValue[i]);
                         for (int i1 = 0; i1 < 8; i1++)
@@ -180,12 +181,12 @@ namespace WindowsFormsApplication1
             {
                 DataRow row = ResultDatabase.NewRow();
                 int i = 3;
-                while (!ParseEscPos.FindCommand(0 + i) && 0 + i < listBox_code.SelectedItem.ToString().Length) //looking for a non-parseable part end
+                while (!ParseEscPos.FindCommand(0 + i/3) && 0 + i < listBox_code.SelectedItem.ToString().Length) //looking for a non-parseable part end
                 {
                     i += 3;
                 }
                 ParseEscPos.commandName = "";
-                row[ResultColumns.Value] += "";
+                row[ResultColumns.Value] = "";
                 row[ResultColumns.Value] += "\"" + (String)listBox_code.SelectedItem.ToString() + "\"";
                 dataGridView_commands.CurrentCell = dataGridView_commands.Rows[0].Cells[0];
                 //dataGridView_commands.FirstDisplayedCell = dataGridView_commands.CurrentCell;
@@ -194,7 +195,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_next_Click(object sender, EventArgs e)
+        private void Button_next_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1)
             {
@@ -202,15 +203,15 @@ namespace WindowsFormsApplication1
                 else listBox_code.SelectedIndex = 0;
             }
             if (listBox_code.SelectedIndex < listBox_code.Items.Count - 1) listBox_code.SelectedIndex++;
-            button_find_Click(this, EventArgs.Empty);
+            Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        private void saveBinFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveBinFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = SourceFile;
             saveFileDialog.Title = "Save BIN file";
@@ -219,7 +220,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveHexFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveHexFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = SourceFile;
             saveFileDialog.Title = "Save HEX file";
@@ -228,7 +229,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveCSVToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = CustomFiscalControl.Properties.Settings.Default.CommandsDatabaseFile;
             saveFileDialog.Title = "Save CSV database";
@@ -237,7 +238,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void SaveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (saveFileDialog.Title == "Save HEX file")
             {
@@ -275,7 +276,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void loadBinToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadBinToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openFileDialog.FileName = "";
             openFileDialog.Title = "Open BIN file";
@@ -284,7 +285,7 @@ namespace WindowsFormsApplication1
             openFileDialog.ShowDialog();
         }
 
-        private void loadHexToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadHexToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openFileDialog.FileName = "";
             openFileDialog.Title = "Open HEX file";
@@ -311,7 +312,7 @@ namespace WindowsFormsApplication1
             openFileDialog.ShowDialog();
         }
 
-        private void openFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OpenFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (openFileDialog.Title == "Open HEX file") //hex text read
             {
@@ -347,7 +348,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void defaultCSVToolStripTextBox_Leave(object sender, EventArgs e)
+        private void DefaultCSVToolStripTextBox_Leave(object sender, EventArgs e)
         {
             if (commandsCSV_ToolStripTextBox.Text != CustomFiscalControl.Properties.Settings.Default.CommandsDatabaseFile)
             {
@@ -356,7 +357,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void errorsCSV_toolStripTextBox_Leave(object sender, EventArgs e)
+        private void ErrorsCSV_toolStripTextBox_Leave(object sender, EventArgs e)
         {
             if (errorsCSV_toolStripTextBox.Text != CustomFiscalControl.Properties.Settings.Default.ErrorsDatabaseFile)
             {
@@ -365,7 +366,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void enableDatabaseEditToolStripMenuItem_Click(object sender, EventArgs e)
+        private void EnableDatabaseEditToolStripMenuItem_Click(object sender, EventArgs e)
         {
             enableDatabaseEditToolStripMenuItem.Checked = !enableDatabaseEditToolStripMenuItem.Checked;
             dataGridView_commands.ReadOnly = !enableDatabaseEditToolStripMenuItem.Checked;
@@ -390,12 +391,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private void dataGridView_result_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private void DataGridView_result_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            this.dataGridView_result.CellValueChanged -= new DataGridViewCellEventHandler(this.dataGridView_result_CellValueChanged);
+            this.dataGridView_result.CellValueChanged -= new DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
             if (dataGridView_result.CurrentCell.ColumnIndex == ResultColumns.Value)
             {
-                if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Bitfield)
+                if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Bitfield)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.BitfieldToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString());
                     int n = 0;
@@ -406,58 +407,58 @@ namespace WindowsFormsApplication1
                         dataGridView_result.Rows[i + 1 + i1].Cells[ResultColumns.Value].Value = Convert.ToInt32(Accessory.GetBit((byte)n, (byte)i1)).ToString();
                     }
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Data)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Data)
                 {
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString().Length;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.DataToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Error)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Error)
                 {
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.ErrorToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Money)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Money)
                 {
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.MoneyToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Number)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Number)
                 {
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.NumberToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Password)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Password)
                 {
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.PasswordToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Quantity)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Quantity)
                 {
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.QuantityToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.String)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.String)
                 {
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString().Length;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.StringToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.PrefData)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.PrefData)
                 {
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString().Length;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = ParseEscPos.PrefDataToRaw(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.TLVData)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.TLVData)
                 {
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString().Length;
@@ -467,7 +468,7 @@ namespace WindowsFormsApplication1
                 else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString().StartsWith("bit"))
                 {
                     int i = dataGridView_result.CurrentCell.RowIndex - 1;
-                    while (dataGridView_result.Rows[i].Cells[ResultColumns.Type].Value.ToString() != ParseEscPos.dataTypes.Bitfield) i--;
+                    while (dataGridView_result.Rows[i].Cells[ResultColumns.Type].Value.ToString() != ParseEscPos.DataTypes.Bitfield) i--;
                     //collect bits to int
                     byte n = 0;
                     for (int i1 = 0; i1 < 8; i1++)
@@ -481,69 +482,69 @@ namespace WindowsFormsApplication1
             else if (dataGridView_result.CurrentCell.ColumnIndex == ResultColumns.Raw)
             {
                 dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Password)
+                if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Password)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToPassword(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToPassword(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.String)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.String)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString().Length / 3;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
-                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString(), n);
+                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToString(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.PrefData)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.PrefData)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString().Length / 3;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
-                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToPrefData(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString(), n);
+                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToPrefData(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.TLVData)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.TLVData)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
                     int n = 0;
                     if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString() == "?") n = dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString().Length / 3;
                     else int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Length].Value.ToString(), out n);
-                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToTLVData(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString(), n);
+                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToTLVData(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()), n);
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Number)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Number)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToNumber(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToNumber(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Money)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Money)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToMoney(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToMoney(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Quantity)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Quantity)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToQuantity(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToQuantity(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Error)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Error)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToError(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToError(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Data)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Data)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToData(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = ParseEscPos.RawToData(Accessory.ConvertHexToByteArray(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                 }
-                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.dataTypes.Bitfield)
+                else if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Bitfield)
                 {
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value = Accessory.CheckHexString(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
-                    double l = ParseEscPos.RawToBitfield(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString());
+                    double l = ParseEscPos.RawToBitfield(Accessory.ConvertHexToByte(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Raw].Value.ToString()));
                     dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value = l.ToString();
                     int n = 0;
                     int.TryParse(dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Value].Value.ToString(), out n);
@@ -554,15 +555,15 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            this.dataGridView_result.CellValueChanged += new DataGridViewCellEventHandler(this.dataGridView_result_CellValueChanged);
+            this.dataGridView_result.CellValueChanged += new DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
         }
 
-        private void dataGridView_commands_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridView_commands_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            button_newCommand_Click(this, EventArgs.Empty);
+            Button_newCommand_Click(this, EventArgs.Empty);
         }
 
-        private string collectCommand()
+        private string CollectCommand()
         {
             string data = "";
             for (int i = 0; i < ResultDatabase.Rows.Count; i++) data += ResultDatabase.Rows[i][ResultColumns.Raw].ToString();
@@ -574,25 +575,25 @@ namespace WindowsFormsApplication1
             return ("01 " + data + Accessory.ConvertByteToHex(ParseEscPos.Q3xf_CRC(dataByte, dataByte.Length)));
         }
 
-        private void button_add_Click(object sender, EventArgs e)
+        private void Button_add_Click(object sender, EventArgs e)
         {
-            listBox_code.Items.Add(collectCommand());
+            listBox_code.Items.Add(CollectCommand());
         }
 
-        private void button_replace_Click(object sender, EventArgs e)
+        private void Button_replace_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
-            listBox_code.Items[listBox_code.SelectedIndex] = collectCommand();
+            listBox_code.Items[listBox_code.SelectedIndex] = CollectCommand();
         }
 
-        private void button_insert_Click(object sender, EventArgs e)
+        private void Button_insert_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
-            listBox_code.Items.Insert(listBox_code.SelectedIndex, collectCommand());
+            listBox_code.Items.Insert(listBox_code.SelectedIndex, CollectCommand());
             listBox_code.SelectedIndex--;
         }
 
-        private void button_remove_Click(object sender, EventArgs e)
+        private void Button_remove_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < listBox_code.Items.Count; i++)
                 if (listBox_code.Items[i].ToString().StartsWith("06 "))
@@ -602,12 +603,12 @@ namespace WindowsFormsApplication1
                 }
         }
 
-        private void button_clear_Click(object sender, EventArgs e)
+        private void Button_clear_Click(object sender, EventArgs e)
         {
             listBox_code.Items.Clear();
         }
 
-        private void textBox_search_TextChanged(object sender, EventArgs e)
+        private void TextBox_search_TextChanged(object sender, EventArgs e)
         {
             dataGridView_commands.CurrentCell = null;
             DataGridViewRow row;
@@ -645,7 +646,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_newCommand_Click(object sender, EventArgs e)
+        private void Button_newCommand_Click(object sender, EventArgs e)
         {
             //restore 
             ParseEscPos.CSVColumns.CommandParameterSize = 1;
@@ -674,7 +675,7 @@ namespace WindowsFormsApplication1
                         row[ResultColumns.Type] = dataGridView_commands.Rows[i].Cells[ParseEscPos.CSVColumns.CommandParameterType].Value.ToString();
                         row[ResultColumns.Length] = dataGridView_commands.Rows[i].Cells[ParseEscPos.CSVColumns.CommandParameterSize].Value.ToString();
                         row[ResultColumns.Description] = dataGridView_commands.Rows[i].Cells[ParseEscPos.CSVColumns.CommandDescription].Value.ToString();
-                        if (row[ResultColumns.Type].ToString() == ParseEscPos.dataTypes.Password)
+                        if (row[ResultColumns.Type].ToString() == ParseEscPos.DataTypes.Password)
                         {
                             row[ResultColumns.Value] = textBox_password.Text;
                             int n = 0;
@@ -687,7 +688,7 @@ namespace WindowsFormsApplication1
                             row[ResultColumns.Raw] = "";
                         }
                         ResultDatabase.Rows.Add(row);
-                        if (row[ResultColumns.Type].ToString() == ParseEscPos.dataTypes.Bitfield)  //decode bitfield
+                        if (row[ResultColumns.Type].ToString() == ParseEscPos.DataTypes.Bitfield)  //decode bitfield
                         {
                             for (int i1 = 0; i1 < 8; i1++)
                             {
@@ -704,12 +705,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void listBox_code_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void ListBox_code_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            button_find_Click(this, EventArgs.Empty);
+            Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void listBox_code_KeyDown(object sender, KeyEventArgs e)
+        private void ListBox_code_KeyDown(object sender, KeyEventArgs e)
         {
             if (sender != listBox_code) return;
 
@@ -726,11 +727,11 @@ namespace WindowsFormsApplication1
                 listBox_code.Items[listBox_code.SelectedIndex] = Accessory.CheckHexString(Clipboard.GetText());
             }
             else if (e.KeyCode == Keys.Delete && listBox_code.SelectedItem.ToString() != "") listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
-            else if (e.Control && e.KeyCode == Keys.P) button_find_Click(this, EventArgs.Empty);
-            else if (e.Control && e.KeyCode == Keys.S && button_Send.Enabled) button_Send_Click(this, EventArgs.Empty);
+            else if (e.Control && e.KeyCode == Keys.P) Button_find_Click(this, EventArgs.Empty);
+            else if (e.Control && e.KeyCode == Keys.S && button_Send.Enabled) Button_Send_Click(this, EventArgs.Empty);
         }
 
-        private void toolStripMenuItem_Connect_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem_Connect_Click(object sender, EventArgs e)
         {
             if (toolStripMenuItem_Connect.Checked)
             {
@@ -798,7 +799,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_Send_Click(object sender, EventArgs e)
+        private void Button_Send_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
             if (listBox_code.SelectedItem.ToString() == "") return;
@@ -881,7 +882,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_SendAll_Click(object sender, EventArgs e)
+        private void Button_SendAll_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) listBox_code.SelectedIndex = 0;
             for (int i = listBox_code.SelectedIndex; i < listBox_code.Items.Count; i++)
@@ -894,7 +895,7 @@ namespace WindowsFormsApplication1
                         if (ToolStripMenuItem_stopOnErrorReplied.Checked && listBox_code.SelectedItem.ToString().Length > 20 && listBox_code.SelectedItem.ToString().Substring(5 * 3, 5) != "00 00") return;
                     }
                     else if (listBox_code.SelectedItem.ToString().Substring(0, 2) == "15") return;
-                    else button_Send_Click(button_SendAll, EventArgs.Empty);
+                    else Button_Send_Click(button_SendAll, EventArgs.Empty);
                 }
             }
         }
@@ -941,7 +942,7 @@ namespace WindowsFormsApplication1
             else toolStripMenuItem_Connect.Enabled = true;
         }
 
-        private void toolStripTextBox_TimeOut_TextChanged(object sender, EventArgs e)
+        private void ToolStripTextBox_TimeOut_TextChanged(object sender, EventArgs e)
         {
             if (!int.TryParse(toolStripTextBox_TimeOut.Text, out SerialtimeOut)) toolStripTextBox_TimeOut.Text = "1000";
         }
@@ -951,7 +952,7 @@ namespace WindowsFormsApplication1
             ToolStripMenuItem_stopOnErrorReplied.Checked = !ToolStripMenuItem_stopOnErrorReplied.Checked;
         }
 
-        private void listBox_code_MouseUp(object sender, MouseEventArgs e)
+        private void ListBox_code_MouseUp(object sender, MouseEventArgs e)
         {
             int index = this.listBox_code.IndexFromPoint(e.Location);
             if (index != ListBox.NoMatches && e.Button == MouseButtons.Right)
@@ -965,28 +966,28 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedItem.ToString() != "") Clipboard.SetText(listBox_code.SelectedItem.ToString());
         }
 
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
             listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
         }
 
-        private void parseToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ParseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_find_Click(this, EventArgs.Empty);
+            Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void sendToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SendToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_Send_Click(this, EventArgs.Empty);
+            Button_Send_Click(this, EventArgs.Empty);
         }
 
-        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Accessory.GetStringFormat(Clipboard.GetText()) == 16)
             {
@@ -994,17 +995,17 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void newCommandToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_newCommand_Click(this, EventArgs.Empty);
+            Button_newCommand_Click(this, EventArgs.Empty);
         }
 
-        private void findThisToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FindThisToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_find_Click(findThisToolStripMenuItem, EventArgs.Empty);
+            Button_find_Click(findThisToolStripMenuItem, EventArgs.Empty);
         }
 
-        private void dataGridView_commands_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
+        private void DataGridView_commands_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right && e.RowIndex >= 0) dataGridView_commands.CurrentCell = dataGridView_commands.Rows[e.RowIndex].Cells[e.ColumnIndex];
         }
