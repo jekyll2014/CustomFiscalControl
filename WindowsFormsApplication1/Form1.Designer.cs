@@ -128,8 +128,8 @@
             this.dataGridView_commands.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView_commands.Size = new System.Drawing.Size(792, 283);
             this.dataGridView_commands.TabIndex = 2;
-            this.dataGridView_commands.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_commands_CellDoubleClick);
-            this.dataGridView_commands.CellMouseUp += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_commands_CellMouseUp);
+            this.dataGridView_commands.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_commands_CellDoubleClick);
+            this.dataGridView_commands.CellMouseUp += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DataGridView_commands_CellMouseUp);
             // 
             // button_next
             // 
@@ -140,7 +140,7 @@
             this.button_next.TabIndex = 11;
             this.button_next.Text = "Parse next ->";
             this.button_next.UseVisualStyleBackColor = true;
-            this.button_next.Click += new System.EventHandler(this.button_next_Click);
+            this.button_next.Click += new System.EventHandler(this.Button_next_Click);
             // 
             // button_find
             // 
@@ -151,7 +151,7 @@
             this.button_find.TabIndex = 12;
             this.button_find.Text = "Parse ->";
             this.button_find.UseVisualStyleBackColor = true;
-            this.button_find.Click += new System.EventHandler(this.button_find_Click);
+            this.button_find.Click += new System.EventHandler(this.Button_find_Click);
             // 
             // menuStrip
             // 
@@ -183,14 +183,14 @@
             this.loadHexToolStripMenuItem.Name = "loadHexToolStripMenuItem";
             this.loadHexToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
             this.loadHexToolStripMenuItem.Text = "Load HEX file";
-            this.loadHexToolStripMenuItem.Click += new System.EventHandler(this.loadHexToolStripMenuItem_Click);
+            this.loadHexToolStripMenuItem.Click += new System.EventHandler(this.LoadHexToolStripMenuItem_Click);
             // 
             // saveHexFileToolStripMenuItem
             // 
             this.saveHexFileToolStripMenuItem.Name = "saveHexFileToolStripMenuItem";
             this.saveHexFileToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
             this.saveHexFileToolStripMenuItem.Text = "Save HEX file";
-            this.saveHexFileToolStripMenuItem.Click += new System.EventHandler(this.saveHexFileToolStripMenuItem_Click);
+            this.saveHexFileToolStripMenuItem.Click += new System.EventHandler(this.SaveHexFileToolStripMenuItem_Click);
             // 
             // LoadCSVToolStripMenuItem
             // 
@@ -211,14 +211,14 @@
             this.saveCSVToolStripMenuItem.Name = "saveCSVToolStripMenuItem";
             this.saveCSVToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
             this.saveCSVToolStripMenuItem.Text = "Save commands database";
-            this.saveCSVToolStripMenuItem.Click += new System.EventHandler(this.saveCSVToolStripMenuItem_Click);
+            this.saveCSVToolStripMenuItem.Click += new System.EventHandler(this.SaveCSVToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
             this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -243,7 +243,7 @@
             this.commandsCSV_ToolStripTextBox.Name = "commandsCSV_ToolStripTextBox";
             this.commandsCSV_ToolStripTextBox.Size = new System.Drawing.Size(100, 23);
             this.commandsCSV_ToolStripTextBox.Text = "q3f_commands.csv";
-            this.commandsCSV_ToolStripTextBox.Leave += new System.EventHandler(this.defaultCSVToolStripTextBox_Leave);
+            this.commandsCSV_ToolStripTextBox.Leave += new System.EventHandler(this.DefaultCSVToolStripTextBox_Leave);
             // 
             // errorsCSVFileName_toolStripMenuItem
             // 
@@ -258,14 +258,14 @@
             this.errorsCSV_toolStripTextBox.Name = "errorsCSV_toolStripTextBox";
             this.errorsCSV_toolStripTextBox.Size = new System.Drawing.Size(100, 23);
             this.errorsCSV_toolStripTextBox.Text = "q3f_errors.csv";
-            this.errorsCSV_toolStripTextBox.Leave += new System.EventHandler(this.errorsCSV_toolStripTextBox_Leave);
+            this.errorsCSV_toolStripTextBox.Leave += new System.EventHandler(this.ErrorsCSV_toolStripTextBox_Leave);
             // 
             // enableDatabaseEditToolStripMenuItem
             // 
             this.enableDatabaseEditToolStripMenuItem.Name = "enableDatabaseEditToolStripMenuItem";
             this.enableDatabaseEditToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.enableDatabaseEditToolStripMenuItem.Text = "Enable database edit";
-            this.enableDatabaseEditToolStripMenuItem.Click += new System.EventHandler(this.enableDatabaseEditToolStripMenuItem_Click);
+            this.enableDatabaseEditToolStripMenuItem.Click += new System.EventHandler(this.EnableDatabaseEditToolStripMenuItem_Click);
             // 
             // COMPortToolStripMenuItem
             // 
@@ -345,7 +345,7 @@
             this.toolStripTextBox_TimeOut.MaxLength = 5;
             this.toolStripTextBox_TimeOut.Name = "toolStripTextBox_TimeOut";
             this.toolStripTextBox_TimeOut.Size = new System.Drawing.Size(100, 23);
-            this.toolStripTextBox_TimeOut.TextChanged += new System.EventHandler(this.toolStripTextBox_TimeOut_TextChanged);
+            this.toolStripTextBox_TimeOut.TextChanged += new System.EventHandler(this.ToolStripTextBox_TimeOut_TextChanged);
             // 
             // ToolStripMenuItem_stopOnErrorReplied
             // 
@@ -359,16 +359,16 @@
             this.toolStripMenuItem_Connect.Name = "toolStripMenuItem_Connect";
             this.toolStripMenuItem_Connect.Size = new System.Drawing.Size(182, 22);
             this.toolStripMenuItem_Connect.Text = "Connect";
-            this.toolStripMenuItem_Connect.Click += new System.EventHandler(this.toolStripMenuItem_Connect_Click);
+            this.toolStripMenuItem_Connect.Click += new System.EventHandler(this.ToolStripMenuItem_Connect_Click);
             // 
             // openFileDialog
             // 
             this.openFileDialog.FileName = "openFileDialog1";
-            this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog_FileOk);
+            this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.OpenFileDialog_FileOk);
             // 
             // saveFileDialog
             // 
-            this.saveFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_FileOk);
+            this.saveFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog_FileOk);
             // 
             // splitContainer1
             // 
@@ -413,7 +413,7 @@
             this.button_SendAll.TabIndex = 12;
             this.button_SendAll.Text = "Send all";
             this.button_SendAll.UseVisualStyleBackColor = true;
-            this.button_SendAll.Click += new System.EventHandler(this.button_SendAll_Click);
+            this.button_SendAll.Click += new System.EventHandler(this.Button_SendAll_Click);
             // 
             // button_Send
             // 
@@ -424,7 +424,7 @@
             this.button_Send.TabIndex = 12;
             this.button_Send.Text = "Send";
             this.button_Send.UseVisualStyleBackColor = true;
-            this.button_Send.Click += new System.EventHandler(this.button_Send_Click);
+            this.button_Send.Click += new System.EventHandler(this.Button_Send_Click);
             // 
             // listBox_code
             // 
@@ -437,9 +437,9 @@
             this.listBox_code.Name = "listBox_code";
             this.listBox_code.Size = new System.Drawing.Size(147, 199);
             this.listBox_code.TabIndex = 0;
-            this.listBox_code.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBox_code_KeyDown);
-            this.listBox_code.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listBox_code_MouseDoubleClick);
-            this.listBox_code.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listBox_code_MouseUp);
+            this.listBox_code.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ListBox_code_KeyDown);
+            this.listBox_code.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListBox_code_MouseDoubleClick);
+            this.listBox_code.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ListBox_code_MouseUp);
             // 
             // button_clear
             // 
@@ -451,7 +451,7 @@
             this.button_clear.TabIndex = 11;
             this.button_clear.Text = "Clear";
             this.button_clear.UseVisualStyleBackColor = true;
-            this.button_clear.Click += new System.EventHandler(this.button_clear_Click);
+            this.button_clear.Click += new System.EventHandler(this.Button_clear_Click);
             // 
             // button_remove
             // 
@@ -463,7 +463,7 @@
             this.button_remove.TabIndex = 11;
             this.button_remove.Text = "Remove replies";
             this.button_remove.UseVisualStyleBackColor = true;
-            this.button_remove.Click += new System.EventHandler(this.button_remove_Click);
+            this.button_remove.Click += new System.EventHandler(this.Button_remove_Click);
             // 
             // textBox_search
             // 
@@ -473,7 +473,7 @@
             this.textBox_search.Name = "textBox_search";
             this.textBox_search.Size = new System.Drawing.Size(80, 20);
             this.textBox_search.TabIndex = 14;
-            this.textBox_search.TextChanged += new System.EventHandler(this.textBox_search_TextChanged);
+            this.textBox_search.TextChanged += new System.EventHandler(this.TextBox_search_TextChanged);
             // 
             // textBox_password
             // 
@@ -521,7 +521,7 @@
             this.dataGridView_result.RowHeadersVisible = false;
             this.dataGridView_result.Size = new System.Drawing.Size(540, 255);
             this.dataGridView_result.TabIndex = 3;
-            this.dataGridView_result.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_result_CellValueChanged);
+            this.dataGridView_result.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
             // 
             // button_replace
             // 
@@ -532,7 +532,7 @@
             this.button_replace.TabIndex = 11;
             this.button_replace.Text = "<- Replace";
             this.button_replace.UseVisualStyleBackColor = true;
-            this.button_replace.Click += new System.EventHandler(this.button_replace_Click);
+            this.button_replace.Click += new System.EventHandler(this.Button_replace_Click);
             // 
             // button_newCommand
             // 
@@ -544,7 +544,7 @@
             this.button_newCommand.TabIndex = 11;
             this.button_newCommand.Text = "New";
             this.button_newCommand.UseVisualStyleBackColor = true;
-            this.button_newCommand.Click += new System.EventHandler(this.button_newCommand_Click);
+            this.button_newCommand.Click += new System.EventHandler(this.Button_newCommand_Click);
             // 
             // button_add
             // 
@@ -555,7 +555,7 @@
             this.button_add.TabIndex = 11;
             this.button_add.Text = "<- Add";
             this.button_add.UseVisualStyleBackColor = true;
-            this.button_add.Click += new System.EventHandler(this.button_add_Click);
+            this.button_add.Click += new System.EventHandler(this.Button_add_Click);
             // 
             // button_insert
             // 
@@ -566,7 +566,7 @@
             this.button_insert.TabIndex = 11;
             this.button_insert.Text = "<- Insert";
             this.button_insert.UseVisualStyleBackColor = true;
-            this.button_insert.Click += new System.EventHandler(this.button_insert_Click);
+            this.button_insert.Click += new System.EventHandler(this.Button_insert_Click);
             // 
             // splitContainer2
             // 
@@ -604,28 +604,28 @@
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.copyToolStripMenuItem.Text = "Copy (Ctrl-C)";
-            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
             this.pasteToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.pasteToolStripMenuItem.Text = "Paste (Ctrl-V)";
-            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
+            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.PasteToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.deleteToolStripMenuItem.Text = "Delete (Del)";
-            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
             // parseToolStripMenuItem
             // 
             this.parseToolStripMenuItem.Name = "parseToolStripMenuItem";
             this.parseToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.parseToolStripMenuItem.Text = "Parse (Ctrl-P)";
-            this.parseToolStripMenuItem.Click += new System.EventHandler(this.parseToolStripMenuItem_Click);
+            this.parseToolStripMenuItem.Click += new System.EventHandler(this.ParseToolStripMenuItem_Click);
             // 
             // sendToolStripMenuItem
             // 
@@ -633,7 +633,7 @@
             this.sendToolStripMenuItem.Name = "sendToolStripMenuItem";
             this.sendToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.sendToolStripMenuItem.Text = "Send (Ctrl-S)";
-            this.sendToolStripMenuItem.Click += new System.EventHandler(this.sendToolStripMenuItem_Click);
+            this.sendToolStripMenuItem.Click += new System.EventHandler(this.SendToolStripMenuItem_Click);
             // 
             // contextMenuStrip_dataBase
             // 
@@ -648,14 +648,14 @@
             this.newCommandToolStripMenuItem.Name = "newCommandToolStripMenuItem";
             this.newCommandToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.newCommandToolStripMenuItem.Text = "New command";
-            this.newCommandToolStripMenuItem.Click += new System.EventHandler(this.newCommandToolStripMenuItem_Click);
+            this.newCommandToolStripMenuItem.Click += new System.EventHandler(this.NewCommandToolStripMenuItem_Click);
             // 
             // findThisToolStripMenuItem
             // 
             this.findThisToolStripMenuItem.Name = "findThisToolStripMenuItem";
             this.findThisToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.findThisToolStripMenuItem.Text = "Find this";
-            this.findThisToolStripMenuItem.Click += new System.EventHandler(this.findThisToolStripMenuItem_Click);
+            this.findThisToolStripMenuItem.Click += new System.EventHandler(this.FindThisToolStripMenuItem_Click);
             // 
             // Form1
             // 

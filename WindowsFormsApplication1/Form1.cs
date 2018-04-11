@@ -206,12 +206,12 @@ namespace WindowsFormsApplication1
             Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        private void saveBinFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveBinFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = SourceFile;
             saveFileDialog.Title = "Save BIN file";
@@ -220,7 +220,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveHexFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveHexFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = SourceFile;
             saveFileDialog.Title = "Save HEX file";
@@ -229,7 +229,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveCSVToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog.FileName = CustomFiscalControl.Properties.Settings.Default.CommandsDatabaseFile;
             saveFileDialog.Title = "Save CSV database";
@@ -238,7 +238,7 @@ namespace WindowsFormsApplication1
             saveFileDialog.ShowDialog();
         }
 
-        private void saveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void SaveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (saveFileDialog.Title == "Save HEX file")
             {
@@ -276,7 +276,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void loadBinToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadBinToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openFileDialog.FileName = "";
             openFileDialog.Title = "Open BIN file";
@@ -285,7 +285,7 @@ namespace WindowsFormsApplication1
             openFileDialog.ShowDialog();
         }
 
-        private void loadHexToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadHexToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openFileDialog.FileName = "";
             openFileDialog.Title = "Open HEX file";
@@ -312,7 +312,7 @@ namespace WindowsFormsApplication1
             openFileDialog.ShowDialog();
         }
 
-        private void openFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OpenFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (openFileDialog.Title == "Open HEX file") //hex text read
             {
@@ -348,7 +348,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void defaultCSVToolStripTextBox_Leave(object sender, EventArgs e)
+        private void DefaultCSVToolStripTextBox_Leave(object sender, EventArgs e)
         {
             if (commandsCSV_ToolStripTextBox.Text != CustomFiscalControl.Properties.Settings.Default.CommandsDatabaseFile)
             {
@@ -357,7 +357,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void errorsCSV_toolStripTextBox_Leave(object sender, EventArgs e)
+        private void ErrorsCSV_toolStripTextBox_Leave(object sender, EventArgs e)
         {
             if (errorsCSV_toolStripTextBox.Text != CustomFiscalControl.Properties.Settings.Default.ErrorsDatabaseFile)
             {
@@ -366,7 +366,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void enableDatabaseEditToolStripMenuItem_Click(object sender, EventArgs e)
+        private void EnableDatabaseEditToolStripMenuItem_Click(object sender, EventArgs e)
         {
             enableDatabaseEditToolStripMenuItem.Checked = !enableDatabaseEditToolStripMenuItem.Checked;
             dataGridView_commands.ReadOnly = !enableDatabaseEditToolStripMenuItem.Checked;
@@ -391,9 +391,9 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private void dataGridView_result_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private void DataGridView_result_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            this.dataGridView_result.CellValueChanged -= new DataGridViewCellEventHandler(this.dataGridView_result_CellValueChanged);
+            this.dataGridView_result.CellValueChanged -= new DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
             if (dataGridView_result.CurrentCell.ColumnIndex == ResultColumns.Value)
             {
                 if (dataGridView_result.Rows[dataGridView_result.CurrentCell.RowIndex].Cells[ResultColumns.Type].Value.ToString() == ParseEscPos.DataTypes.Bitfield)
@@ -555,15 +555,15 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            this.dataGridView_result.CellValueChanged += new DataGridViewCellEventHandler(this.dataGridView_result_CellValueChanged);
+            this.dataGridView_result.CellValueChanged += new DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
         }
 
-        private void dataGridView_commands_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridView_commands_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            button_newCommand_Click(this, EventArgs.Empty);
+            Button_newCommand_Click(this, EventArgs.Empty);
         }
 
-        private string collectCommand()
+        private string CollectCommand()
         {
             string data = "";
             for (int i = 0; i < ResultDatabase.Rows.Count; i++) data += ResultDatabase.Rows[i][ResultColumns.Raw].ToString();
@@ -575,25 +575,25 @@ namespace WindowsFormsApplication1
             return ("01 " + data + Accessory.ConvertByteToHex(ParseEscPos.Q3xf_CRC(dataByte, dataByte.Length)));
         }
 
-        private void button_add_Click(object sender, EventArgs e)
+        private void Button_add_Click(object sender, EventArgs e)
         {
-            listBox_code.Items.Add(collectCommand());
+            listBox_code.Items.Add(CollectCommand());
         }
 
-        private void button_replace_Click(object sender, EventArgs e)
+        private void Button_replace_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
-            listBox_code.Items[listBox_code.SelectedIndex] = collectCommand();
+            listBox_code.Items[listBox_code.SelectedIndex] = CollectCommand();
         }
 
-        private void button_insert_Click(object sender, EventArgs e)
+        private void Button_insert_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
-            listBox_code.Items.Insert(listBox_code.SelectedIndex, collectCommand());
+            listBox_code.Items.Insert(listBox_code.SelectedIndex, CollectCommand());
             listBox_code.SelectedIndex--;
         }
 
-        private void button_remove_Click(object sender, EventArgs e)
+        private void Button_remove_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < listBox_code.Items.Count; i++)
                 if (listBox_code.Items[i].ToString().StartsWith("06 "))
@@ -603,12 +603,12 @@ namespace WindowsFormsApplication1
                 }
         }
 
-        private void button_clear_Click(object sender, EventArgs e)
+        private void Button_clear_Click(object sender, EventArgs e)
         {
             listBox_code.Items.Clear();
         }
 
-        private void textBox_search_TextChanged(object sender, EventArgs e)
+        private void TextBox_search_TextChanged(object sender, EventArgs e)
         {
             dataGridView_commands.CurrentCell = null;
             DataGridViewRow row;
@@ -646,7 +646,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_newCommand_Click(object sender, EventArgs e)
+        private void Button_newCommand_Click(object sender, EventArgs e)
         {
             //restore 
             ParseEscPos.CSVColumns.CommandParameterSize = 1;
@@ -705,12 +705,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void listBox_code_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void ListBox_code_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void listBox_code_KeyDown(object sender, KeyEventArgs e)
+        private void ListBox_code_KeyDown(object sender, KeyEventArgs e)
         {
             if (sender != listBox_code) return;
 
@@ -728,10 +728,10 @@ namespace WindowsFormsApplication1
             }
             else if (e.KeyCode == Keys.Delete && listBox_code.SelectedItem.ToString() != "") listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
             else if (e.Control && e.KeyCode == Keys.P) Button_find_Click(this, EventArgs.Empty);
-            else if (e.Control && e.KeyCode == Keys.S && button_Send.Enabled) button_Send_Click(this, EventArgs.Empty);
+            else if (e.Control && e.KeyCode == Keys.S && button_Send.Enabled) Button_Send_Click(this, EventArgs.Empty);
         }
 
-        private void toolStripMenuItem_Connect_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem_Connect_Click(object sender, EventArgs e)
         {
             if (toolStripMenuItem_Connect.Checked)
             {
@@ -799,7 +799,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_Send_Click(object sender, EventArgs e)
+        private void Button_Send_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
             if (listBox_code.SelectedItem.ToString() == "") return;
@@ -882,7 +882,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void button_SendAll_Click(object sender, EventArgs e)
+        private void Button_SendAll_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) listBox_code.SelectedIndex = 0;
             for (int i = listBox_code.SelectedIndex; i < listBox_code.Items.Count; i++)
@@ -895,7 +895,7 @@ namespace WindowsFormsApplication1
                         if (ToolStripMenuItem_stopOnErrorReplied.Checked && listBox_code.SelectedItem.ToString().Length > 20 && listBox_code.SelectedItem.ToString().Substring(5 * 3, 5) != "00 00") return;
                     }
                     else if (listBox_code.SelectedItem.ToString().Substring(0, 2) == "15") return;
-                    else button_Send_Click(button_SendAll, EventArgs.Empty);
+                    else Button_Send_Click(button_SendAll, EventArgs.Empty);
                 }
             }
         }
@@ -942,7 +942,7 @@ namespace WindowsFormsApplication1
             else toolStripMenuItem_Connect.Enabled = true;
         }
 
-        private void toolStripTextBox_TimeOut_TextChanged(object sender, EventArgs e)
+        private void ToolStripTextBox_TimeOut_TextChanged(object sender, EventArgs e)
         {
             if (!int.TryParse(toolStripTextBox_TimeOut.Text, out SerialtimeOut)) toolStripTextBox_TimeOut.Text = "1000";
         }
@@ -952,7 +952,7 @@ namespace WindowsFormsApplication1
             ToolStripMenuItem_stopOnErrorReplied.Checked = !ToolStripMenuItem_stopOnErrorReplied.Checked;
         }
 
-        private void listBox_code_MouseUp(object sender, MouseEventArgs e)
+        private void ListBox_code_MouseUp(object sender, MouseEventArgs e)
         {
             int index = this.listBox_code.IndexFromPoint(e.Location);
             if (index != ListBox.NoMatches && e.Button == MouseButtons.Right)
@@ -966,28 +966,28 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedItem.ToString() != "") Clipboard.SetText(listBox_code.SelectedItem.ToString());
         }
 
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox_code.SelectedIndex == -1) return;
             listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
         }
 
-        private void parseToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ParseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Button_find_Click(this, EventArgs.Empty);
         }
 
-        private void sendToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SendToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_Send_Click(this, EventArgs.Empty);
+            Button_Send_Click(this, EventArgs.Empty);
         }
 
-        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Accessory.GetStringFormat(Clipboard.GetText()) == 16)
             {
@@ -995,17 +995,17 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void newCommandToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            button_newCommand_Click(this, EventArgs.Empty);
+            Button_newCommand_Click(this, EventArgs.Empty);
         }
 
-        private void findThisToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FindThisToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Button_find_Click(findThisToolStripMenuItem, EventArgs.Empty);
         }
 
-        private void dataGridView_commands_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
+        private void DataGridView_commands_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right && e.RowIndex >= 0) dataGridView_commands.CurrentCell = dataGridView_commands.Rows[e.RowIndex].Cells[e.ColumnIndex];
         }
