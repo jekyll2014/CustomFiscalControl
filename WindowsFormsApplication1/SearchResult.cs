@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 public class ParseEscPos
 {
     //INTERFACES
     //source of the data to parce
-    public static string sourceData = ""; //in Init()
+    //public static string sourceData = ""; //in Init()
+    public static List<byte> sourceData = new List<byte>(); //in Init()
     //source of the command description (DataTable)
     public static DataTable commandDataBase = new DataTable(); //in Init()
 
@@ -16,9 +18,9 @@ public class ParseEscPos
     //Command list preselected
     //private static Dictionary<int, string> _commandList = new Dictionary<int, string>(); //in Init()
 
-    private const string ackSign = "06 ";
-    private const string nackSign = "15 ";
-    private const string frameStartSign = "01 ";
+    private const byte ackSign = 0x06;
+    private const byte nackSign = 0x15;
+    private const byte frameStartSign = 0x01;
     public static bool itIsReply = false;
     public static bool itIsReplyNACK = false;
     public static bool crcFailed = false;
@@ -49,7 +51,7 @@ public class ParseEscPos
     //command parameter type
     public static List<string> commandParamType = new List<string>(); //in findCommand()
     //command parameter RAW value
-    public static List<string> commandParamRAWValue = new List<string>(); //in findCommand()
+    public static List<List<byte>> commandParamRAWValue = new List<List<byte>>(); //in findCommand()
     //command parameter value
     public static List<string> commandParamValue = new List<string>(); //in findCommand()
 
@@ -69,7 +71,7 @@ public class ParseEscPos
         public static int ReplyDescription { get; set; } = 8;
     }
 
-    public class dataTypes
+    public class DataTypes
     {
         public static string Password { get; set; } = "password";
         public static string String { get; set; } = "string";
@@ -83,63 +85,67 @@ public class ParseEscPos
         public static string Bitfield { get; set; } = "bitfield";
     }
 
-    internal static void Init(string _data, DataTable _dataBase)  //Setup source table of commands and source text field
+    /*internal static void Init(string _data, DataTable _dataBase)  //Setup source table of commands and source text field
     {
         sourceData = _data;
         commandDataBase = _dataBase;
-    }
+    }*/
 
+    //lineNum = -1 - искать во всех командах
+    //lineNum = x - искать в команде на определенной стоке базы
     public static bool FindCommand(int _pos, int lineNum = -1)
     {
         //reset all result values
         ClearCommand();
 
-        if (sourceData.Length < _pos +4* 3) return false;
+        if (sourceData.Count < _pos + 1) return false;
         //check if it's a command or reply
-        if (sourceData.Substring(_pos,3).StartsWith(frameStartSign))
+        if (sourceData[_pos] == frameStartSign)
         {
             CSVColumns.CommandParameterSize = 1;
             CSVColumns.CommandParameterType = 2;
             CSVColumns.CommandParameterValue = 3;
             CSVColumns.CommandDescription = 4;
             itIsReply = false;
+            if (sourceData.Count < _pos + 3) return false;
         }
-        else if (sourceData.Substring(_pos, 3).StartsWith(ackSign) || sourceData.Substring(_pos, 3).StartsWith(nackSign))
+        else if (sourceData[_pos] == ackSign || sourceData[_pos] == nackSign)
         {
             itIsReply = true;
-            if (sourceData.Substring(_pos, 3).StartsWith(nackSign)) itIsReplyNACK = true;
+            if (sourceData[_pos] == nackSign) itIsReplyNACK = true;
             CSVColumns.CommandParameterSize = 5;
             CSVColumns.CommandParameterType = 6;
             CSVColumns.CommandParameterValue = 7;
             CSVColumns.CommandDescription = 8;
-            _pos += 3;
+            if (sourceData.Count < _pos + 4) return false;
+            _pos++;
         }
         else return false;
 
         //select data frame
         commandFrameLength = 0;
-        if (sourceData.Substring(_pos, 3) == frameStartSign)
+        if (sourceData[_pos] == frameStartSign)
         {
-            commandFrameLength = Accessory.ConvertHexToByte(sourceData.Substring(_pos + 3 * 1, 3));
-            commandFrameLength = commandFrameLength + Accessory.ConvertHexToByte(sourceData.Substring(_pos + 3 * 2, 3)) * 256;
-            _pos += 3 * 3;
+            commandFrameLength = sourceData[_pos + 1];
+            commandFrameLength = commandFrameLength + sourceData[_pos + 2] * 256;
+            _pos += 3;
         }
         else return false;
 
         //check if "commandFrameLength" less than "sourcedata". note the last byte of "sourcedata" is CRC.
-        if (sourceData.Length - 3 < _pos + commandFrameLength * 3)
+        if (sourceData.Count - 1 < _pos + commandFrameLength)
         {
-            commandFrameLength = (sourceData.Length - _pos) / 3;
+            commandFrameLength = sourceData.Count - _pos;
             lengthIncorrect = true;
         }
 
         //find command
-        if (sourceData.Length < _pos + 3) return false; //check if it doesn't go over the last symbol
+        if (sourceData.Count < _pos + 1) return false; //check if it doesn't go over the last symbol
         for (int i = 0; i < commandDataBase.Rows.Count; i++)
         {
             if (commandDataBase.Rows[i][CSVColumns.CommandName].ToString() != "")
             {
-                if (sourceData.Substring(_pos, 2) == commandDataBase.Rows[i][CSVColumns.CommandName].ToString().Trim()) //if command matches
+                if (sourceData[_pos] == Accessory.ConvertHexToByte(commandDataBase.Rows[i][CSVColumns.CommandName].ToString())) //if command matches
                 {
                     if (lineNum < 0 || lineNum == i) //if string matches
                     {
@@ -149,8 +155,8 @@ public class ParseEscPos
                         commandFramePosition = _pos;
                         //get CRC of the frame
                         //check length of sourceData
-                        int calculatedCRC = Q3xf_CRC(Accessory.ConvertHexToByteArray(sourceData.Substring(_pos - 2 * 3, (commandFrameLength + 2) * 3)), commandFrameLength + 2);
-                        int sentCRC = Accessory.ConvertHexToByte(sourceData.Substring(_pos + commandFrameLength * 3, 3));
+                        int calculatedCRC = Q3xf_CRC(sourceData.GetRange(_pos - 2, commandFrameLength + 2).ToArray(), commandFrameLength + 2);
+                        int sentCRC = sourceData[_pos + commandFrameLength];
                         if (calculatedCRC != sentCRC) crcFailed = true;
                         else crcFailed = false;
                         //check command height - how many rows are occupated
@@ -171,7 +177,7 @@ public class ParseEscPos
     public static bool FindCommandParameter()
     {
         ClearCommandParameters();
-        //collect parameters
+        //collect parameters from database
         int _stopSearch = commandDbLineNum + 1;
         while (_stopSearch < commandDataBase.Rows.Count && commandDataBase.Rows[_stopSearch][CSVColumns.CommandName].ToString() == "") _stopSearch++;
         for (int i = commandDbLineNum + 1; i < _stopSearch; i++)
@@ -197,7 +203,7 @@ public class ParseEscPos
             }
         }
 
-        int commandParamPosition = commandFramePosition + 1 * 3;
+        int commandParamPosition = commandFramePosition + 1;
         //process each parameter
         for (int parameter = 0; parameter < commandParamDbLineNum.Count; parameter++)
         {
@@ -224,125 +230,133 @@ public class ParseEscPos
             string errMessage = "";
 
             string _prmType = commandDataBase.Rows[(int)commandParamDbLineNum[parameter]][CSVColumns.CommandParameterType].ToString().ToLower();
-            if (parameter != 0) commandParamPosition = commandParamPosition + commandParamSize[parameter - 1] * 3;
-            string _raw = "";
+            if (parameter != 0) commandParamPosition = commandParamPosition + commandParamSize[parameter - 1];
+            List<byte> _raw = new List<byte>();
             string _val = "";
 
-            if (_prmType == dataTypes.Password)
+            if (_prmType == DataTypes.Password)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + commandParamSize[parameter] <= sourceData.Count-1)
                 {
-                    _raw = sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]);
-                    l = RawToPassword(_raw);
+                    _raw = sourceData.GetRange(commandParamPosition, commandParamSize[parameter]);
+                    l = RawToPassword(_raw.ToArray());
                     _val = l.ToString().Substring(0, 2) + "/" + l.ToString().Substring(2);
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = sourceData.Substring(commandParamPosition);
+                    if (commandParamPosition <= sourceData.Count-1) _raw = sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition);
                 }
             }
-            else if (_prmType == dataTypes.String)
+            else if (_prmType == DataTypes.String)
             {
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + commandParamSize[parameter] <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    _val = RawToString(_raw, commandParamSize[parameter]);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    _val = RawToString(_raw.ToArray(), commandParamSize[parameter]);
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.Number)
+            else if (_prmType == DataTypes.Number)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + commandParamSize[parameter] <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    l = RawToNumber(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    l = RawToNumber(_raw.ToArray());
                     _val = l.ToString();
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.Money)
+            else if (_prmType == DataTypes.Money)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    l = RawToMoney(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    l = RawToMoney(_raw.ToArray());
                     _val = l.ToString();
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.Quantity)
+            else if (_prmType == DataTypes.Quantity)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    l = RawToQuantity(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    l = RawToQuantity(_raw.ToArray());
                     _val = l.ToString();
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.Error)
+            else if (_prmType == DataTypes.Error)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    l = RawToError(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    l = RawToError(_raw.ToArray());
                     _val = l.ToString();
+                    if (l != 0 && commandFrameLength == 3 && parameter == 0 && (commandParamPosition + commandParamSize[parameter]) == sourceData.Count - 1)
+                    {
+                        if (commandParamDbLineNum.Count > 1) commandParamDbLineNum.RemoveRange(1, commandParamDbLineNum.Count - parameter - 1);
+                        if (commandParamSize.Count > 1) commandParamSize.RemoveRange(1, commandParamSize.Count - parameter - 1);
+                        if (commandParamSizeDefined.Count > 1) commandParamSizeDefined.RemoveRange(1, commandParamSizeDefined.Count - parameter - 1);
+                        if (commandParamDesc.Count > 1) commandParamDesc.RemoveRange(1, commandParamDesc.Count - parameter - 1);
+                        if (commandParamType.Count > 1) commandParamType.RemoveRange(1, commandParamType.Count - parameter - 1);
+                    }
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.Data)
+            else if (_prmType == DataTypes.Data)
             {
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    _val = RawToData(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    _val = RawToData(_raw.ToArray());
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.PrefData)
+            else if (_prmType == DataTypes.PrefData)
             {
                 int prefLength = 0;
                 //get gata length
-                if (commandParamPosition + (3 * 2) <= sourceData.Length)
+                if (commandParamPosition + 2 <= sourceData.Count-1)
                 {
-                    prefLength = (int)RawToNumber(sourceData.Substring(commandParamPosition, 3 * 2));
+                    prefLength = (int)RawToNumber(sourceData.GetRange(commandParamPosition, 2).ToArray());
                 }
                 //check if the size is correct
                 if (prefLength + 2 > commandParamSize[parameter])
@@ -354,31 +368,31 @@ public class ParseEscPos
                 else commandParamSize[parameter] = prefLength + 2;
 
                 //get data
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
                     //_val = "[" + prefLength.ToString() + "]" + Accessory.ConvertHexToString(_raw.Substring(6), CustomFiscalControl.Properties.Settings.Default.CodePage);
-                    _val = RawToPrefData(_raw, commandParamSize[parameter]);
+                    _val = RawToPrefData(_raw.ToArray(), commandParamSize[parameter]);
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
-            else if (_prmType == dataTypes.TLVData)
+            else if (_prmType == DataTypes.TLVData)
             {
                 int TlvType = 0;
                 int TlvLength = 0;
                 if (commandParamSize[parameter] > 0)
                 {
-                    if (commandParamPosition + (3 * 4) <= sourceData.Length)
+                    if (commandParamPosition + 4 <= sourceData.Count-1)
                     {
                         //get type of parameter
-                        TlvType = (int)RawToNumber(sourceData.Substring(commandParamPosition, 3 * 2));
+                        TlvType = (int)RawToNumber(sourceData.GetRange(commandParamPosition, 2).ToArray());
                         //get gata length
-                        TlvLength = (int)RawToNumber(sourceData.Substring(commandParamPosition + 3 * 2, 3 * 2));
+                        TlvLength = (int)RawToNumber(sourceData.GetRange(commandParamPosition + 2, 2).ToArray());
                     }
                     //check if the size is correct
                     if (TlvLength + 4 > commandParamSize[parameter])
@@ -390,34 +404,34 @@ public class ParseEscPos
                     else commandParamSize[parameter] = TlvLength + 4;
 
                     //get data
-                    if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                    if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                     {
-                        _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
+                        _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
                         //_val = "[" + TlvType.ToString() + "]" + "[" + TlvLength.ToString() + "]" + Accessory.ConvertHexToString(_raw.Substring(12), CustomFiscalControl.Properties.Settings.Default.CodePage);
-                        _val = RawToTLVData(_raw, commandParamSize[parameter]);
+                        _val = RawToTLVData(_raw.ToArray(), commandParamSize[parameter]);
                     }
                     else
                     {
                         errFlag = true;
                         errMessage = "!!!ERR: Out of data bound!!!";
-                        if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                        if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                     }
                 }
             }
-            else if (_prmType == dataTypes.Bitfield)
+            else if (_prmType == DataTypes.Bitfield)
             {
                 double l = 0;
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
-                    l = RawToBitfield(_raw);
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
+                    l = RawToBitfield(_raw[0]);
                     _val = l.ToString();
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = (sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition));
                 }
             }
             else
@@ -425,16 +439,16 @@ public class ParseEscPos
                 //flag = true;
                 errFlag = true;
                 errMessage = "!!!ERR: Incorrect parameter type!!!";
-                if (commandParamPosition + (3 * commandParamSize[parameter]) <= sourceData.Length)
+                if (commandParamPosition + (commandParamSize[parameter]) <= sourceData.Count-1)
                 {
-                    _raw = (sourceData.Substring(commandParamPosition, 3 * commandParamSize[parameter]));
+                    _raw = (sourceData.GetRange(commandParamPosition, commandParamSize[parameter]));
                     //_val = Accessory.ConvertHexToString(_raw, CustomFiscalControl.Properties.Settings.Default.CodePage);
                 }
                 else
                 {
                     errFlag = true;
                     errMessage = "!!!ERR: Out of data bound!!!";
-                    if (commandParamPosition <= sourceData.Length) _raw = (sourceData.Substring(commandParamPosition));
+                    if (commandParamPosition <= sourceData.Count-1) _raw = sourceData.GetRange(commandParamPosition, sourceData.Count-1 - commandParamPosition);
                 }
             }
             commandParamRAWValue.Add(_raw);
@@ -492,49 +506,16 @@ public class ParseEscPos
         commandParamValue.Clear();
         commandParamRAWValue.Clear();
         commandParamDbLineNum.Clear();
+        commandParamSizeDefined.Clear();
         commandBlockLength = 0;
     }
 
     internal static int ResultLength()  //Calc "CommandBlockLength" - length of command text in source text field
     {
-        commandBlockLength = frameStartSign.Length + 2 * 3 + commandFrameLength * 3 + 1 * 3;
+        //FrameStart[1] + DataLength[2] + data + CRC
+        commandBlockLength = 3 + commandFrameLength + 1;
         if (itIsReply) commandBlockLength += 3;
         return commandBlockLength;
-    }
-
-    public static string FormatHexString(string inStr)
-    {
-        string outStr = "";
-        if (inStr != "")
-        {
-            char[] str = inStr.ToCharArray(0, inStr.Length);
-            string tmpStr = "";
-            for (int i = 0; i < inStr.Length; i++)
-            {
-                if ((str[i] >= 'A' && str[i] <= 'F') || (str[i] >= 'a' && str[i] <= 'f') || (str[i] >= '0' && str[i] <= '9'))
-                {
-                    tmpStr += str[i].ToString();
-                }
-                else if ((str[i] == ' ' || str[i] == '_') && tmpStr.Length > 0)
-                {
-                    for (int i1 = 0; i1 < 2 - tmpStr.Length; i1++) outStr += "0";
-                    outStr += tmpStr + str[i];
-                    tmpStr = "";
-                }
-                if (tmpStr.Length == 2)
-                {
-                    outStr += tmpStr + " ";
-                    tmpStr = "";
-                }
-            }
-            if (tmpStr != "")
-            {
-                for (int i = 0; i < 2 - tmpStr.Length; i++) outStr += "0";
-                outStr += tmpStr + " ";
-            }
-            return outStr.ToUpperInvariant();
-        }
-        else return ("");
     }
 
     public static byte Q3xf_CRC(byte[] data, int length)
@@ -548,48 +529,58 @@ public class ParseEscPos
         byte sumL = (byte)(sum - sumH * 256);
         return (byte)(sumH ^ sumL);
     }
-    
-    public static string RawToString(string s, int n)
+
+    public static string RawToString(byte[] b, int n)
     {
-        string outStr = Accessory.ConvertHexToString(s, CustomFiscalControl.Properties.Settings.Default.CodePage);
+        string outStr = Encoding.GetEncoding(CustomFiscalControl.Properties.Settings.Default.CodePage).GetString(b);
         if (outStr.Length > n) outStr = outStr.Substring(0, n);
         return outStr;
     }
 
-    public static string RawToPrefData(string s, int n)
+    public static string RawToPrefData(byte[] b, int n)
     {
-        if (s.Length - 3 * 2 > n) s = s.Substring(0, (n + 2) * 3);
+        List<byte> s = new List<byte>();
+        s.AddRange(b);
+        if (s.Count < 2) return "";
+        if (s.Count > n + 2) s = s.GetRange(0, n + 2);
         string outStr = "";
-        if (s.Length >= 6)
+        int strLength = (int)RawToNumber(s.GetRange(0, 2).ToArray());
+        outStr = "[" + strLength.ToString() + "]";
+        if (s.Count == 2 + strLength)
         {
-            int strLength = (int)RawToNumber(s.Substring(0, 6));
-            if (strLength != s.Substring(6).Length / 3) outStr = "[INCORRECT LENGTH]";
-            outStr += Accessory.ConvertHexToString(s.Substring(6), CustomFiscalControl.Properties.Settings.Default.CodePage);
+            byte[] b1 = s.GetRange(2, s.Count - 2).ToArray();
+            if (Accessory.PrintableByteArray(b1)) outStr += "\"" + Encoding.GetEncoding(CustomFiscalControl.Properties.Settings.Default.CodePage).GetString(b1) + "\"";
+            else outStr += "[" + Accessory.ConvertByteArrayToHex(b1) + "]";
         }
+        else outStr += "INCORRECT LENGTH";
         return outStr;
     }
 
     // !!! check TLV actual data layout
-    public static string RawToTLVData(string s, int n)
+    public static string RawToTLVData(byte[] b, int n)
     {
-        if (s.Length < 12) return "";
-        if (s.Length > n - 4) s=s.Substring(0, n - 4);
+        List<byte> s = new List<byte>();
+        s.AddRange(b);
+        if (s.Count < 4) return "";
+        if (s.Count > n + 4) s = s.GetRange(0, n + 4);
         string outStr = "";
-        int tlvType = (int)RawToNumber(s.Substring(0, 6));
-        outStr += "[" + tlvType.ToString() + "]";
-        int strLength = (int)RawToNumber(s.Substring(6, 6));
-        if (s.Length > 12)
+        int tlvType = (int)RawToNumber(s.GetRange(0, 2).ToArray());
+        outStr = "[" + tlvType.ToString() + "]";
+        int strLength = (int)RawToNumber(s.GetRange(2, 2).ToArray());
+        outStr += "[" + strLength.ToString() + "]";
+        if (s.Count == 4 + strLength)
         {
-            if (strLength != s.Substring(12).Length / 3) outStr += "[!!!INCORRECT LENGTH]";
-            outStr += Accessory.ConvertHexToString(s.Substring(12), CustomFiscalControl.Properties.Settings.Default.CodePage);
+            byte[] b1 = s.GetRange(2, s.Count - 2).ToArray();
+            if (Accessory.PrintableByteArray(b1)) outStr += "\"" + Encoding.GetEncoding(CustomFiscalControl.Properties.Settings.Default.CodePage).GetString(s.GetRange(4, s.Count - 4).ToArray()) + "\"";
+            else outStr += "[" + Accessory.ConvertByteArrayToHex(b1) + "]";
         }
+        else outStr += "INCORRECT LENGTH";
         return outStr;
     }
 
-    public static double RawToPassword(string s)
+    public static double RawToPassword(byte[] b)
     {
         double l = 0;
-        byte[] b = Accessory.ConvertHexToByteArray(s);
         for (int n = 0; n < b.Length; n++)
         {
             l += (b[n] * Math.Pow(256, n));
@@ -597,10 +588,9 @@ public class ParseEscPos
         return l;
     }
 
-    public static double RawToNumber(string s)
+    public static double RawToNumber(byte[] b)
     {
         double l = 0;
-        byte[] b = Accessory.ConvertHexToByteArray(s);
         for (int n = 0; n < b.Length; n++)
         {
             if (n == b.Length - 1 && Accessory.GetBit(b[n], 7) == true)
@@ -613,10 +603,9 @@ public class ParseEscPos
         return l;
     }
 
-    public static double RawToMoney(string s)
+    public static double RawToMoney(byte[] b)
     {
         double l = 0;
-        byte[] b = Accessory.ConvertHexToByteArray(s);
         for (int n = 0; n < b.Length; n++)
         {
             if (n == b.Length - 1 && Accessory.GetBit(b[n], 7) == true)
@@ -629,10 +618,9 @@ public class ParseEscPos
         return l / 100;
     }
 
-    public static double RawToQuantity(string s)
+    public static double RawToQuantity(byte[] b)
     {
         double l = 0;
-        byte[] b = Accessory.ConvertHexToByteArray(s);
         for (int n = 0; n < b.Length; n++)
         {
             if (n == b.Length - 1 && Accessory.GetBit(b[n], 7) == true)
@@ -645,10 +633,9 @@ public class ParseEscPos
         return l / 1000;
     }
 
-    public static double RawToError(string s)
+    public static double RawToError(byte[] b)
     {
         double l = 0;
-        byte[] b = Accessory.ConvertHexToByteArray(s);
         for (int n = 0; n < b.Length; n++)
         {
             l += (b[n] * Math.Pow(256, n));
@@ -656,24 +643,28 @@ public class ParseEscPos
         return l;
     }
 
-    public static string RawToData(string s)
+    public static string RawToData(byte[] b)
     {
-        return Accessory.ConvertHexToString(s, CustomFiscalControl.Properties.Settings.Default.CodePage);
+        if (Accessory.PrintableByteArray(b)) return("\""+ Encoding.GetEncoding(CustomFiscalControl.Properties.Settings.Default.CodePage).GetString(b)+"\"");
+        else return ("[" + Accessory.ConvertByteArrayToHex(b) + "]");
     }
 
-    public static double RawToBitfield(string s)
+    public static double RawToBitfield(byte b)
     {
-        long l = 0;
-        if (s != "") long.TryParse(s.Trim(), NumberStyles.HexNumber, null, out l);
-        return l;
+        return b;
     }
-    
+
     public static string StringToRaw(string s, int n)
     {
-        while (s.Length < n) s += "\0";
-        return Accessory.ConvertStringToHex(s, CustomFiscalControl.Properties.Settings.Default.CodePage).Substring(0, n * 3);
+        //while (s.Length < n) s += "\0";
+        //return Accessory.ConvertStringToHex(s, CustomFiscalControl.Properties.Settings.Default.CodePage).Substring(0, n * 3);
+        string outStr = Accessory.ConvertStringToHex(s.Substring(1, s.Length - 2), CustomFiscalControl.Properties.Settings.Default.CodePage);
+        if (outStr.Length > n * 3) outStr = outStr.Substring(0, n * 3);
+        while (outStr.Length < n * 3) s += "00 ";
+        return outStr;
     }
 
+    // !!! incorrect layout
     public static string PrefDataToRaw(string s, int n)
     {
         if (s.Length > n - 2) s = s.Substring(0, n - 2);
@@ -682,7 +673,7 @@ public class ParseEscPos
         return outStr;
     }
 
-    // !!! check TLV actual data layout
+    // !!! incorrect layout
     public static string TLVDataToRaw(string s, int n)
     {
         if (!(s.Contains('[') && s.Contains(']'))) return "";
@@ -759,7 +750,6 @@ public class ParseEscPos
         string str = "";
         for (int i = 0; i < n; i++) str += Accessory.ConvertByteToHex(b[i]);
         return str;
-
     }
 
     public static string ErrorToRaw(string s, int n)
@@ -776,8 +766,13 @@ public class ParseEscPos
 
     public static string DataToRaw(string s, int n)
     {
-        while (s.Length < n) s += "\0";
-        return Accessory.ConvertStringToHex(s, CustomFiscalControl.Properties.Settings.Default.CodePage).Substring(0, n * 3);
+        string outStr = "";
+        if (s.Substring(0, 1) == "[") outStr = s.Substring(1,s.Length-2);
+        else if (s.Substring(0, 1) == "\"") outStr = Accessory.ConvertStringToHex(s.Substring(1, s.Length - 2), CustomFiscalControl.Properties.Settings.Default.CodePage);
+        else return("");
+        if (outStr.Length > n * 3) outStr=outStr.Substring(0,n*3);
+        while (outStr.Length < n*3) s += "00 ";
+        return outStr;
     }
 
     public static string BitfieldToRaw(string s)
