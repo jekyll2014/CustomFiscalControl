@@ -85,7 +85,6 @@ public class ParseEscPos
         public static string Bitfield { get; set; } = "bitfield";
     }
 
-
     //lineNum = -1 - искать во всех командах
     //lineNum = x - искать в команде на определенной стоке базы
     public static bool FindCommand(int _pos, int lineNum = -1)
@@ -138,7 +137,7 @@ public class ParseEscPos
         int i = 0;
         if (lineNum != -1) i = lineNum;
         if (sourceData.Count < _pos + 1) return false; //check if it doesn't go over the last symbol
-        for (i=i; i < commandDataBase.Rows.Count; i++)
+        for (; i < commandDataBase.Rows.Count; i++)
         {
             if (commandDataBase.Rows[i][CSVColumns.CommandName].ToString() != "")
             {
@@ -498,12 +497,12 @@ public class ParseEscPos
     internal static void ClearCommandParameters()
     {
         commandParamSize.Clear();
+        commandParamSizeDefined.Clear();
         commandParamDesc.Clear();
         commandParamType.Clear();
         commandParamValue.Clear();
         commandParamRAWValue.Clear();
-        commandParamDbLineNum.Clear();
-        commandParamSizeDefined.Clear();
+        commandParamDbLineNum.Clear();        
         commandBlockLength = 0;
     }
 
