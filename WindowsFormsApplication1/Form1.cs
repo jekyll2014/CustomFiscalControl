@@ -380,16 +380,6 @@ namespace WindowsFormsApplication1
             return "!!!Unknown error!!!";
         }
 
-        public static bool PrintableHex(string str)
-        {
-            for (int i = 0; i < str.Length; i += 3)
-            {
-                if (!byte.TryParse(str.Substring(i, 3), NumberStyles.HexNumber, null, out byte n)) return false;
-                else if (n < 32 && n != 0) return false;
-            }
-            return true;
-        }
-
         private void DataGridView_result_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             this.dataGridView_result.CellValueChanged -= new DataGridViewCellEventHandler(this.DataGridView_result_CellValueChanged);
