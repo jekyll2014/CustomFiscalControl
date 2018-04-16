@@ -835,7 +835,7 @@ namespace WindowsFormsApplication1
                                 _nackOK = true;
                             }
                         }
-                        else if (_nackOK && !_frameOK)
+                        else if (!_frameOK)
                         {
                             if (SerialPort1.BytesToRead > 0) c = SerialPort1.ReadByte();
                             if (c == 01)
