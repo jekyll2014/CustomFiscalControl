@@ -655,7 +655,7 @@ public class ParseEscPos
         //return Accessory.ConvertStringToHex(s, CustomFiscalControl.Properties.Settings.Default.CodePage).Substring(0, n * 3);
         string outStr = Accessory.ConvertStringToHex(s.Substring(1, s.Length - 2), CustomFiscalControl.Properties.Settings.Default.CodePage);
         if (outStr.Length > n * 3) outStr = outStr.Substring(0, n * 3);
-        while (outStr.Length < n * 3) s += "00 ";
+        while (outStr.Length < n * 3) outStr += "00 ";
         return outStr;
     }
 
@@ -766,7 +766,7 @@ public class ParseEscPos
         else if (s.Substring(0, 1) == "\"") outStr = Accessory.ConvertStringToHex(s.Substring(1, s.Length - 2), CustomFiscalControl.Properties.Settings.Default.CodePage);
         else return("");
         if (outStr.Length > n * 3) outStr=outStr.Substring(0,n*3);
-        while (outStr.Length < n*3) s += "00 ";
+        while (outStr.Length < n*3) outStr += "00 ";
         return outStr;
     }
 
