@@ -136,7 +136,7 @@ namespace WindowsFormsApplication1
             ResultDatabase.Clear();
             textBox_search.Clear();
             ParseEscPos.sourceData.Clear();
-            ParseEscPos.sourceData.AddRange( Accessory.ConvertHexToByteArray( listBox_code.SelectedItem.ToString()));
+            ParseEscPos.sourceData.AddRange(Accessory.ConvertHexToByteArray(listBox_code.SelectedItem.ToString()));
             int lineNum = -1;
             if (sender == findThisToolStripMenuItem && dataGridView_commands.CurrentCell != null) lineNum = dataGridView_commands.CurrentCell.RowIndex;
             if (ParseEscPos.FindCommand(0, lineNum))
@@ -158,7 +158,7 @@ namespace WindowsFormsApplication1
                     row[ResultColumns.Value] = ParseEscPos.commandParamValue[i];
                     row[ResultColumns.Type] = ParseEscPos.commandParamType[i];
                     row[ResultColumns.Length] = ParseEscPos.commandParamSizeDefined[i];
-                    row[ResultColumns.Raw] = Accessory.ConvertByteArrayToHex( ParseEscPos.commandParamRAWValue[i].ToArray());
+                    row[ResultColumns.Raw] = Accessory.ConvertByteArrayToHex(ParseEscPos.commandParamRAWValue[i].ToArray());
                     row[ResultColumns.Description] = ParseEscPos.commandParamDesc[i];
                     if (ParseEscPos.commandParamType[i].ToLower() == ParseEscPos.DataTypes.Error) row[ResultColumns.Description] += ": " + GetErrorDesc(int.Parse(ParseEscPos.commandParamValue[i]));
                     ResultDatabase.Rows.Add(row);
@@ -180,7 +180,7 @@ namespace WindowsFormsApplication1
             {
                 DataRow row = ResultDatabase.NewRow();
                 int i = 3;
-                while (!ParseEscPos.FindCommand(0 + i/3) && 0 + i < listBox_code.SelectedItem.ToString().Length) //looking for a non-parseable part end
+                while (!ParseEscPos.FindCommand(0 + i / 3) && 0 + i < listBox_code.SelectedItem.ToString().Length) //looking for a non-parseable part end
                 {
                     i += 3;
                 }
@@ -812,6 +812,7 @@ namespace WindowsFormsApplication1
                 DateTime startTime = DateTime.UtcNow;
                 try
                 {
+                    //!!! rework byte reading direct to array
                     while (!_timeout)
                     {
                         int c = -1;
@@ -833,7 +834,7 @@ namespace WindowsFormsApplication1
                                 _frameOK = true;
                             }
                         }
-                        else if (_frameOK && !_lengthOK)
+                        else if (!_lengthOK)
                         {
                             if (SerialPort1.BytesToRead >= 2)
                             {
@@ -848,8 +849,7 @@ namespace WindowsFormsApplication1
                         }
                         else if (_lengthOK)
                         {
-                            if (SerialPort1.BytesToRead > 0) c = SerialPort1.ReadByte();
-                            if (c != -1) _rxBytes.Add((byte)c);
+                            if (SerialPort1.BytesToRead > 0) _rxBytes.Add((byte)SerialPort1.ReadByte());
                         }
                         else SerialPort1.ReadByte();
                         if (_rxBytes.Count > _frameLength + 4) _timeout = true;
@@ -860,12 +860,13 @@ namespace WindowsFormsApplication1
                 {
                     MessageBox.Show("Error reading port " + SerialPort1.PortName + ": " + ex.Message);
                 }
-                if (_rxBytes.Count > 0)
+                if ((_rxBytes.Count > _frameLength && _frameOK && _lengthOK) || showIncorrectRepliesToolStripMenuItem.Checked)
                 {
                     string data = Accessory.ConvertByteArrayToHex(_rxBytes.ToArray());
                     if (listBox_code.SelectedIndex + 1 >= listBox_code.Items.Count) listBox_code.Items.Add(data);
                     else if (listBox_code.Items[listBox_code.SelectedIndex + 1].ToString().Length > 2 && listBox_code.Items[listBox_code.SelectedIndex + 1].ToString().Substring(0, 2) == "06") listBox_code.Items[listBox_code.SelectedIndex + 1] = data;
                     else listBox_code.Items.Insert(listBox_code.SelectedIndex + 1, data);
+                    if (autoParseReplyToolStripMenuItem.Checked) Button_next_Click(this, EventArgs.Empty);
                 }
             }
         }
@@ -1001,6 +1002,16 @@ namespace WindowsFormsApplication1
         private void COMPortToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SerialPopulate();
+        }
+
+        private void showIncorrectRepliesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            showIncorrectRepliesToolStripMenuItem.Checked = !showIncorrectRepliesToolStripMenuItem.Checked;
+        }
+
+        private void autoParseReplyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            autoParseReplyToolStripMenuItem.Checked = !autoParseReplyToolStripMenuItem.Checked;
         }
     }
 }
