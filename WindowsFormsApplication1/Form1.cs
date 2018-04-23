@@ -566,6 +566,7 @@ namespace WindowsFormsApplication1
         private void Button_add_Click(object sender, EventArgs e)
         {
             listBox_code.Items.Add(CollectCommand());
+            listBox_code.SelectedIndex = listBox_code.Items.Count - 1;
         }
 
         private void Button_replace_Click(object sender, EventArgs e)
@@ -703,19 +704,25 @@ namespace WindowsFormsApplication1
             if (sender != listBox_code) return;
 
             if (listBox_code.SelectedIndex == -1) return;
-
+            //Ctrl-C - copy string to clipboard
             if (e.Control && e.KeyCode == Keys.C && listBox_code.SelectedItem.ToString() != "") Clipboard.SetText(listBox_code.SelectedItem.ToString());
+            //Ctrl-Ins - copy string to clipboard
             else if (e.Control && e.KeyCode == Keys.Insert && listBox_code.SelectedItem.ToString() != "") Clipboard.SetText(listBox_code.SelectedItem.ToString());
-            else if (e.Control && e.KeyCode == Keys.V && Accessory.GetStringFormat(Clipboard.GetText()) == 16)
+            //Ctrl-V - insert string from clipboard
+            else if (e.Control && e.KeyCode == Keys.V && Accessory.GetStringFormat(Clipboard.GetText()) == 16) listBox_code.Items[listBox_code.SelectedIndex] = Accessory.CheckHexString(Clipboard.GetText());
+            //Shift-Ins - insert string from clipboard
+            else if (e.Shift && e.KeyCode == Keys.Insert && Accessory.GetStringFormat(Clipboard.GetText()) == 16) listBox_code.Items[listBox_code.SelectedIndex] = Accessory.CheckHexString(Clipboard.GetText());
+            //DEL - delete string
+            else if (e.KeyCode == Keys.Delete)
             {
-                listBox_code.Items[listBox_code.SelectedIndex] = Accessory.CheckHexString(Clipboard.GetText());
+                int i = listBox_code.SelectedIndex;
+                listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
+                if (i >= listBox_code.Items.Count) i = listBox_code.Items.Count - 1;
+                listBox_code.SelectedIndex = i;
             }
-            else if (e.Shift && e.KeyCode == Keys.Insert && Accessory.GetStringFormat(Clipboard.GetText()) == 16)
-            {
-                listBox_code.Items[listBox_code.SelectedIndex] = Accessory.CheckHexString(Clipboard.GetText());
-            }
-            else if (e.KeyCode == Keys.Delete && listBox_code.SelectedItem.ToString() != "") listBox_code.Items.RemoveAt(listBox_code.SelectedIndex);
+            //Ctrl-P - parse string
             else if (e.Control && e.KeyCode == Keys.P) Button_find_Click(this, EventArgs.Empty);
+            //Ctrl-S - send string to device
             else if (e.Control && e.KeyCode == Keys.S && button_Send.Enabled) Button_Send_Click(this, EventArgs.Empty);
         }
 
