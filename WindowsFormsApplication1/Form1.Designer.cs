@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace CustomFiscalControl
 {
     partial class Form1
     {
