@@ -374,10 +374,9 @@ public static class Accessory
 
     public static string ConvertByteArrayToHex(byte[] byteArr)
     {
-        if (byteArr == null) return "";
-
-        var hexStr = new StringBuilder();
-        for (var i = 0; i < byteArr.Length; i++)
+        StringBuilder hexStr = new StringBuilder();
+        int i = 0;
+        for (i = 0; i < byteArr.Length; i++)
         {
             hexStr.Append(byteArr[i].ToString("X2"));
             hexStr.Append(" ");
@@ -388,11 +387,10 @@ public static class Accessory
 
     public static string ConvertByteArrayToHex(byte[] byteArr, int length)
     {
-        if (byteArr == null) return "";
-
-        if (length > byteArr.Length) length = byteArr.Length;
-        var hexStr = new StringBuilder();
-        for (var i = 0; i < length; i++)
+        if (Length > byteArr.Length) Length = byteArr.Length;
+        StringBuilder hexStr = new StringBuilder();
+        int i = 0;
+        for (i = 0; i < Length; i++)
         {
             hexStr.Append(byteArr[i].ToString("X2"));
             hexStr.Append(" ");
@@ -408,11 +406,10 @@ public static class Accessory
 
     public static bool PrintableByteArray(byte[] str)
     {
-        if (str == null) return false;
-
-        for (var i = 0; i < str.Length; i++)
-            if (str[i] < 32)
-                return false;
+        for (int i = 0; i < str.Length; i++)
+        {
+            if (str[i] < 32) return false;
+        }
         return true;
     }
 
@@ -434,22 +431,14 @@ public static class Accessory
         return true;
     }
 
-    public static string ConvertByteArrayToString(byte[] byteArr, int codePage = 866)
+    public static string FilterZeroChar(string m)
     {
-        if (byteArr == null) return "";
-
-        return Encoding.GetEncoding(codePage).GetString(byteArr);
-    }
-
-    public static string FilterZeroChar(string m, bool replaceWithSpace = true)
-    {
-        if (string.IsNullOrEmpty(m)) return "";
-
-        var n = new StringBuilder();
-        for (var i = 0; i < m.Length; i++)
-            if (m[i] != 0) n.Append(m[i]);
-            else if (replaceWithSpace) n.Append(" ");
-        return n.ToString();
+        string n = "";
+        for (int i = 0; i < m.Length; i++)
+        {
+            if (m[i] != 0) n += m[i];
+        }
+        return n;
     }
 
     public static int CountSubString(string str, string subStr)
@@ -497,16 +486,13 @@ public static class Accessory
         return answer;
     }
 
-    public static long
-        EvaluateVariables(string expression, string[] variables = null,
-            string[] values = null) //calculate string formula
+    public static long EvaluateVariables(string expression, string[] variables = null, string[] values = null)  //calculate string formula
     {
-        if (string.IsNullOrEmpty(expression) || variables == null || values == null) return 0;
-
-        if (variables.Length != values.Length) return 0;
-
-        for (var i = 0; i < variables.Length; i++) expression = expression.Replace(variables[i], values[i]);
-
+        if (variables != null)
+        {
+            if (variables.Length != values.Length) return 0;
+            for (int i = 0; i < variables.Length; i++) expression = expression.Replace(variables[i], values[i]);
+        }
         var loDataTable = new DataTable();
         var loDataColumn = new DataColumn("Eval", typeof(long), expression);
         loDataTable.Columns.Add(loDataColumn);
@@ -529,27 +515,10 @@ public static class Accessory
 
     public static bool ByteArrayCompare(byte[] a1, byte[] b1)
     {
-        if (a1 == null && b1 == null) return true;
-        if (a1 == null || b1 == null) return false;
-        if (a1.Length != b1.Length) return false;
-
-        for (var i = 0; i < a1.Length; i++)
-            if (a1[i] != b1[i])
-                return false;
-        return true;
-    }
-
-    public static byte[] CombineByteArrays(byte[] first, byte[] second)
-    {
-        if (first == null && second == null) return new byte[] { };
-        if (second == null) return first;
-        if (first == null) return second;
-
-        var ret = new byte[first.Length + second.Length];
-        Buffer.BlockCopy(first, 0, ret, 0, first.Length);
-        Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
-        return ret;
-    }
+        if (a1.Length != b1.Length)
+        {
+            return false;
+        }
 
     public static byte CrcCalc(byte[] instr)
     {
@@ -575,10 +544,8 @@ public static class Accessory
         return crc;
     }
 
-    public static byte CrcCalc(byte[] instr, int startPos, int endPos)
+    public static byte crcCalc(byte[] instr)
     {
-        if (instr == null) return 0;
-
         byte crc = 0x00;
         var i = startPos;
         while (i <= endPos)
@@ -608,7 +575,7 @@ public static class Accessory
         return s;
     }
 
-    /* Example:
+    /*    
     string[] ports = System.IO.Ports.SerialPort.GetPortNames();
     Hashtable PortNames = BuildPortNameHash(ports);
     foreach (String s in PortNames.Keys)
@@ -666,13 +633,7 @@ public static class Accessory
         }
     }
 
-    public static string AssemblyVersion()
-    {
-        return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
     }
 
-    public static string ProductVersion()
-    {
-        return Application.ProductVersion;
-    }
 }
